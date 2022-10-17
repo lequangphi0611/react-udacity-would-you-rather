@@ -1,10 +1,10 @@
 import { getCookie } from 'cookies-next';
 import { useCallback, useDebugValue, useEffect, useState } from 'react';
-import { useMutation, useQuery } from 'react-query';
+import { useMutation } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { useApiContext } from '../contexts';
-import { authenticateSelectors } from '../state/selectors';
 import { actions as authenticateActions } from '../state/authenticate';
+import { authenticateSelectors } from '../state/selectors';
 
 const useUser = () => {
   const tokenState = useSelector(authenticateSelectors.selectToken);
@@ -29,6 +29,7 @@ const useUser = () => {
     }
   );
 
+  // Get authenticate token from cookie
   const getToken = useCallback(
     () => tokenState || getCookie('token')?.valueOf(),
     [tokenState]
@@ -46,7 +47,6 @@ const useUser = () => {
       return;
     }
 
-    console.log({ loginToken: token });
     mutate(token as string);
   }, [userState, mutate, getToken]);
 

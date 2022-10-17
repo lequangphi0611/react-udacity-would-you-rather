@@ -1,19 +1,62 @@
 import { yupResolver } from '@hookform/resolvers/yup';
+import _, { some, toNumber } from 'lodash';
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { useCallback } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
+import * as yup from 'yup';
+import { QuestionItemResponse } from '../../../src/apis/types/QuestionsResponse';
 import { Form, Spinner } from '../../../src/components/atoms';
 import { Layout } from '../../../src/components/layouts';
 import { QuestionItem } from '../../../src/components/molecules';
-import { useQuestion, useUser, useVoteQuestion } from '../../../src/hooks';
-import * as yup from 'yup';
-import { useCallback, useMemo } from 'react';
-import _, { some, toNumber } from 'lodash';
 import { QuestionItemState } from '../../../src/components/molecules/QuestionItem/types';
-import { toast } from 'react-toastify';
+import { useUser, useVoteQuestion } from '../../../src/hooks';
 
-function Question() {
-  const { query } = useRouter();
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  query,
+  resolvedUrl,
+}) => {
+  const authorization = req.cookies['token'];
+
+  if (!authorization) {
+    return {
+      redirect: {
+        destination: `/login?from=${resolvedUrl}`,
+        statusCode: 200,
+        permanent: false,
+      },
+    };
+  }
+
+  const res = await fetch(
+    `${
+      req.headers.referer?.substring(
+        0,
+        req.headers.referer.indexOf(req.headers.host as string)
+      ) || 'http://'
+    }${req.headers.host}/api/questions/${query['id']}`,
+    {
+      headers: {
+        authorization,
+      },
+    }
+  );
+
+  if (res.status === 404) {
+    return {
+      notFound: true,
+    };
+  }
+  return {
+    props: { question: await res.json() },
+  };
+};
+
+function Question({ question }: { question: QuestionItemResponse }) {
+  const { replace, asPath } = useRouter();
   const { user } = useUser();
 
   const methods = useForm({
@@ -28,17 +71,11 @@ function Question() {
     ),
   });
 
-  const {
-    data: question,
-    isLoading: questionLoading,
-    refetch,
-  } = useQuestion(query.id as string | undefined);
-
   const { voteQuestion, isLoading } = useVoteQuestion({
     questionId: question?.id,
     onSuccess() {
       toast.success('Vote the question successfully!');
-      refetch();
+      replace(asPath);
     },
   });
 
@@ -60,10 +97,9 @@ function Question() {
       <Head>
         <title>{question?.id}</title>
       </Head>
-      {questionLoading && <Spinner />}
       <div>
         {question && (
-          <Spinner isLoading={questionLoading || isLoading}>
+          <Spinner isLoading={isLoading}>
             <Form onSubmit={handleSubmit} {...methods}>
               {question && (
                 <QuestionItem item={question} state={questionState} />

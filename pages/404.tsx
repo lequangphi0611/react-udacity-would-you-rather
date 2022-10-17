@@ -28,4 +28,6 @@ export async function getStaticProps() {
     },
   };
 }
+
+FourOhFour.authenticated = true;
 export default FourOhFour;

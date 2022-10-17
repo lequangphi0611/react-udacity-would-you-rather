@@ -14,7 +14,14 @@ import { CustomAppPageType } from '../src/types';
 import '../styles/globals.css';
 
 // Create a client
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+});
 
 const SimpleApiContextProvider = React.memo<PropsWithChildren<{}>>(
   ({ children }) => {

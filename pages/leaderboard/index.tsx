@@ -22,7 +22,6 @@ export async function getStaticProps() {
 function LeaderBoard() {
   const { data: userScore, isLoading, isFetching } = useUserScore();
 
-  console.log(userScore);
   return (
     <>
       {!userScore && <Spinner isLoading={isLoading || isFetching} />}

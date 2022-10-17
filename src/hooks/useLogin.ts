@@ -21,6 +21,7 @@ const useLogin = () => {
     {
       onSuccess: (data) => {
         dispatch(authenticateActions.login(data));
+        // set authenticate token from cookie
         setCookie('token', data.token);
       },
     }

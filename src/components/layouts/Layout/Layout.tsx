@@ -13,13 +13,13 @@ const navItems: NavItemType[] = [
   },
   {
     children: 'New Question',
-    key: 'new-question',
-    url: '/questions/new',
+    key: 'add-question',
+    url: '/questions/add',
   },
   {
     children: 'Leader Board',
     key: 'leader-board',
-    url: '/leader-board',
+    url: '/leaderboard',
   },
 ];
 
